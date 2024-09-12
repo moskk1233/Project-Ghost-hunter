@@ -2,17 +2,22 @@ public class Ghost {
   private int x;
   private int y;
   private int health;
+  private int maxHealth;
   private int level;
   private boolean isDead;
+  private int exp;
 
   static final int GHOST_OFFSET_X = 5;
   static final int GHOST_OFFSET_Y = 10;
 
-  Ghost(int health) {
+  Ghost() {
     this.x = 0;
     this.y = 0;
-    this.health = health;
+    this.level = 1;
     this.isDead = false;
+    this.health = 100 * this.level;
+    this.maxHealth = health;
+    this.exp = this.level * 10;
   }
 
   public int getX() {
@@ -21,6 +26,14 @@ public class Ghost {
 
   public int getY() {
     return this.y;
+  }
+
+  public int getExp() {
+    return this.exp;
+  }
+
+  public int getMaxHealth() {
+    return this.maxHealth;
   }
 
   public int getHealth() {
@@ -47,11 +60,19 @@ public class Ghost {
     this.health = health;
   }
 
+  public void setMaxHealth(int maxHealth) {
+    this.maxHealth = maxHealth;
+  }
+
   public void setLevel(int level) {
     this.level = level;
   }
 
   public void setDead(boolean dead) {
     this.isDead = dead;
+  }
+
+  public void setExp(int exp) {
+    this.exp = exp;
   }
 }

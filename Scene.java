@@ -26,11 +26,26 @@ public class Scene extends JPanel implements MouseMotionListener, MouseListener 
   Image background;
   Image ghostImage;
   Image playerCrosshair;
-
+  
   Font font = new Font("Tahoma", Font.PLAIN, 50);
+  Timer timer = new Timer();
+
+  private void newWave() {
+    for (int i = 0; i< this.ghostAmount; i++) {
+      Random rng = new Random();
+      this.ghosts[i] = new Ghost();
+      Ghost ghost = this.ghosts[i];
+      
+      ghost.setX(rng.nextInt(1000));
+      ghost.setY(rng.nextInt(563));
+      ghost.setDead(false);
+      ghost.setLevel(this.player.getLevel());
+      GhostMovement task = new GhostMovement(this.ghosts[i], this);
+      timer.scheduleAtFixedRate(task, 0, 100);
+    }
+  }
   
   Scene() {
-    Timer timer = new Timer();
 
     this.ghostAmount = 5;
     this.ghosts = new Ghost[this.ghostAmount];
@@ -39,12 +54,12 @@ public class Scene extends JPanel implements MouseMotionListener, MouseListener 
     for (int i = 0; i< this.ghostAmount; i++) {
       Random rng = new Random();
 
-      this.ghosts[i] = new Ghost(100);
+      this.ghosts[i] = new Ghost();
 
       this.ghosts[i].setX(rng.nextInt(1000));
       this.ghosts[i].setY(rng.nextInt(563));
       GhostMovement task = new GhostMovement(this.ghosts[i], this);
-      timer.scheduleAtFixedRate(task, 0, 200);
+      timer.scheduleAtFixedRate(task, 0, 100);
     }
 
     this.setSize(1000, 563);
@@ -61,33 +76,42 @@ public class Scene extends JPanel implements MouseMotionListener, MouseListener 
   public void paint(Graphics g) {
     // draw background
     g.drawImage(this.background, 0, 0, this);
-
+    
     // draw game name
     g.setFont(font);
     g.setColor(Color.YELLOW);
     g.drawString("Ghost Hunter", 650, 75);
     g.drawRect(625, 25, 350, 60);
 
+    // draw player exp bar
+    int playerExpBar = (int)Math.floor((float)this.player.getExp() / this.player.getMaxExp() * this.getWidth());
+    g.drawString("Level: " + this.player.getLevel(), 0, 450);
+    g.fillRect(0, 500, playerExpBar, 10);
+
     // draw ghosts
     for (int i = 0; i < this.ghostAmount; i++) {
       Ghost ghost = this.ghosts[i];
       
-      if (ghost.getHealth() <= 0) {
-        ghost.setDead(true);
-      }
       
       if (!ghost.isDead()) {
+        if (ghost.getHealth() <= 0) {
+          this.player.addExp(ghost.getExp());
+          ghost.setDead(true);
+        }
         g.drawImage(this.ghostImage, ghost.getX(), ghost.getY(), this);
       }
     }
     
+    // draw ghost hitbox
     g.setFont(this.font.deriveFont(10F));
     for (int i = 0; i < this.ghostAmount; i++) {
       Ghost ghost = this.ghosts[i];
+      int ghostHealth = (int)Math.floor((float)ghost.getHealth() / ghost.getMaxHealth() * 100);
+      
       if (!ghost.isDead()) {
         g.drawRect(ghost.getX() + Ghost.GHOST_OFFSET_X, ghost.getY() + Ghost.GHOST_OFFSET_Y, 90, 80);
-        g.drawString("x:" + ghost.getX() + " y:" + ghost.getY(), ghost.getX(), ghost.getY() + 5);
-        g.fillRect(ghost.getX(), ghost.getY() + 100, ghost.getHealth(), 10);
+        g.drawString("x:" + ghost.getX() + " y:" + ghost.getY() + " level: " + ghost.getLevel(), ghost.getX(), ghost.getY() + 5);
+        g.fillRect(ghost.getX(), ghost.getY() + 100, ghostHealth, 10);
       }
     }
 
@@ -97,9 +121,11 @@ public class Scene extends JPanel implements MouseMotionListener, MouseListener 
 
     // game over
     if (isGameOver(this.ghosts)) {
-      g.setColor(Color.WHITE);
-      g.setFont(font.deriveFont(50F));
-      g.drawString("Game Over", 375, 300);
+      this.newWave();
+      
+      // g.setColor(Color.WHITE);
+      // g.setFont(font.deriveFont(50F));
+      // g.drawString("Game Over", 375, 300);
     }
   }
 
@@ -123,7 +149,7 @@ public class Scene extends JPanel implements MouseMotionListener, MouseListener 
       if (ghost.isDead()) continue;
 
       if (isTouchHitBox(e.getX(), e.getY(), ghost.getX(), ghost.getY())) {
-        ghost.setHealth(ghost.getHealth() - 20);
+        ghost.setHealth(ghost.getHealth() - this.player.getDamage());
       }
     }
   }
