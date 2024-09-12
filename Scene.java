@@ -120,7 +120,7 @@ public class Scene extends JPanel implements MouseMotionListener, MouseListener 
     
 
     // game over
-    if (isGameOver(this.ghosts)) {
+    if (isAllDead(this.ghosts)) {
       this.newWave();
       
       // g.setColor(Color.WHITE);
@@ -176,7 +176,7 @@ public class Scene extends JPanel implements MouseMotionListener, MouseListener 
     this.repaint();
   }
 
-  boolean isGameOver(Ghost[] ghosts) {
+  boolean isAllDead(Ghost[] ghosts) {
     for (Ghost ghost : ghosts) {
       if (!ghost.isDead()) {
         return false;
